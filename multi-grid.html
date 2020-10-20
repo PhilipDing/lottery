@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>九宫格抽奖</title>
+
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            font-family: "微軟正黑體";
+        }
+
+        body {
+            background-color: #3DBFBB;
+        }
+
+        .container {
+            max-width: 1000px;
+            min-width: 400px;
+            margin: 0 auto;
+        }
+
+        section.lottery {
+            width: 540px;
+            margin: 20px auto;
+            position: relative;
+            border-radius: 10px;
+            box-shadow: 0px 0px 0px 20px #F52037, 23px 23px 30px 1px #333;
+            background: #c0091c;
+        }
+
+        section.lottery ul {
+            width: 100%;
+            height: 540px;
+        }
+
+        section.lottery ul li {
+            height: 180px;
+            width: 33%;
+            list-style: none;
+            text-align: center;
+            position: absolute;
+            display: block;
+            border: 3px solid #c0091c;
+            box-sizing: border-box;
+            background: #fff;
+            font-size: 19.2px;
+            border-radius: 15px;
+            box-shadow: 0px -5px #fcb2ba inset;
+        }
+
+        section.lottery ul li.active {
+            font-weight: bold;
+            background-color: #ffd79a;
+            box-shadow: 0px -5px #FF9A01 inset;
+        }
+
+        section.lottery ul li.item-1 {
+            top: 0.5%;
+            left: 0.5%;
+        }
+
+        section.lottery ul li.item-2 {
+            top: 0.5%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        section.lottery ul li.item-3 {
+            top: 0.5%;
+            right: 0.5%;
+        }
+
+        section.lottery ul li.item-4 {
+            top: 50%;
+            transform: translateY(-50%);
+            right: 0.5%;
+        }
+
+        section.lottery ul li.item-5 {
+            bottom: 0.5%;
+            right: 0.5%;
+        }
+
+        section.lottery ul li.item-6 {
+            bottom: 0.5%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        section.lottery ul li.item-7 {
+            bottom: 0.5%;
+            left: 0.5%;
+        }
+
+        section.lottery ul li.item-8 {
+            top: 50%;
+            transform: translateY(-50%);
+            left: 0.5%;
+        }
+
+        section.lottery ul li img {
+            width: 85px;
+            margin: 30px 0 10px;
+        }
+
+        section.lottery .lottery_btn {
+            position: absolute;
+            width: 33%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        section.lottery .lottery_btn button {
+            font-weight: bold;
+            box-shadow: none;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            position: relative;
+            width: 95%;
+            height: 156.5217391304px;
+            top: -8px;
+            color: #341f00;
+            font-size: 40px;
+            background-color: #FF9A01;
+            border: none;
+            border-radius: 5px;
+            box-shadow: inset 0px 3px 0px #ffe1b4, 0px 8px 0px #cd7b00;
+        }
+
+        section.lottery .lottery_btn button:disabled {
+            cursor: default;
+            background-color: #ffb84e;
+        }
+
+        section.lottery .lottery_btn button:active,
+        section.lottery .lottery_btn button:disabled {
+            margin: 13px auto;
+            box-shadow: inset 0px 1px 0px #ffe1b4, 0px 0px 0px #cd7b00;
+            top: 0px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <section class="lottery">
+            <ul>
+                <li class="shiny item-1"></li>
+                <li class="shiny item-2"></li>
+                <li class="shiny item-3"></li>
+                <li class="shiny item-4"></li>
+                <li class="shiny item-5"></li>
+                <li class="shiny item-6"></li>
+                <li class="shiny item-7"></li>
+                <li class="shiny item-8"></li>
+                <div class="lottery_btn">
+                    <button>开始<br />抽奖</button>
+                </div>
+            </ul>
+        </section>
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
+    <script>
+        const prize_list = [
+            {
+                "name": "再抽一次",
+                "img": "https://image.flaticon.com/icons/svg/703/703265.svg"
+            },
+            {
+                "name": "+8积分",
+                "img": "https://image.flaticon.com/icons/svg/138/138281.svg"
+            },
+            {
+                "name": "+108积分",
+                "img": "https://image.flaticon.com/icons/svg/138/138281.svg"
+            },
+            {
+                "name": "谢谢惠顾",
+                "img": "https://image.flaticon.com/icons/svg/742/742751.svg"
+            },
+            {
+                "name": "iphone 12",
+                "img": "https://image.flaticon.com/icons/svg/214/214314.svg"
+            },
+            {
+                "name": "+12积分",
+                "img": "https://image.flaticon.com/icons/svg/138/138281.svg"
+            },
+            {
+                "name": "+58积分",
+                "img": "https://image.flaticon.com/icons/svg/138/138281.svg"
+            },
+            {
+                "name": "谢谢惠顾",
+                "img": "https://image.flaticon.com/icons/svg/742/742751.svg"
+            }
+        ];
+
+        $(function () {
+            for (var i = 0; i <= prize_list.length - 1; i++) {
+                $(".lottery ul li").eq(i).append("<img src='" + prize_list[i].img + "'><p>" + prize_list[i].name + "</p>")
+            }
+        });
+
+        let iEnd = -1;
+
+        function draw(oMain, fn) {
+            var timer = null,
+                iNow = oMain.find(".active").index(), // -1
+                len = oMain.find("li").length, // 8
+                iSpeed = 300,
+                count = 0, // 转了多少次
+                iLast = len; // 出结果后转多少圈
+
+            (function run() {
+                // 第3个开始加速
+                if (count > 2) { iSpeed = 100; }
+
+                // 最后3圈减速
+                if (iLast < 2) { iSpeed = 300; }
+
+                iNow++;
+                count++;
+
+                if (iNow >= len) {
+                    iNow = 0;
+                }
+                oMain.find("li").removeClass("active").eq(iNow).addClass("active");
+
+                timer = setTimeout(run, iSpeed);
+
+                // 得到结果
+                if (iEnd !== -1 && iNow == iEnd) {
+                    console.log('iLast==>', iLast);
+                    iLast--;
+                    if (iLast == 0) {
+                        clearTimeout(timer);
+                        fn();
+                    }
+                }
+            })();
+        }
+
+        $(".lottery_btn button").on("click", function () {
+            const $this = $(this);
+
+            // TODO: API
+            setTimeout(function () {
+                iEnd = Math.floor(Math.random() * prize_list.length);
+                console.log('iEnd==>', iEnd);
+            }, 0);
+
+            $this.attr("disabled", "disabled");
+
+            $(".lottery li").removeClass("shiny");
+
+            draw($(".lottery"), function () {
+                // 恢复按钮
+                $this.removeAttr("disabled");
+
+                setTimeout(function () {
+                    var prize = $(".lottery").find("li").eq(iEnd).find("p").html();
+                    alert("恭喜获得：" + prize + "!!");
+                    $(".lottery li").removeClass("active");
+                    $(".lottery li").addClass("shiny");
+                }, 500);
+            });
+        });
+    </script>
+</body>
+
+</html>
