@@ -5,14 +5,232 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>刮刮卡</title>
+
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            font-family: "微软雅黑";
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #3DBFBB;
+        }
+
+        .container {
+            max-width: 1000px;
+            min-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .lottery {
+            position: relative;
+            width: 300px;
+            height: 150px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        #canvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            background: transparent;
+            user-select: none;
+        }
+
+        #award {
+            color: #c42d2d;
+            border: 8px solid #ff5d5d;
+            display: flex;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+
+        button {
+            height: 44px;
+            width: 120px;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+    </style>
 </head>
 
 <body>
     <div class="container">
         <div class="lottery">
+            <canvas id="canvas"></canvas>
 
+            <div id="award">
+                <img id="awardLoading" src="./images/loading.gif" style="width: 80px; height: 80px;">
+                <span id="awardContent"></span>
+            </div>
+        </div>
+
+        <div>
+            <button id="button">再刮一次</button>
         </div>
     </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
+    <script>
+        const prize_list = [
+            {
+                "name": "再抽一次",
+                "img": "./images/more.svg"
+            },
+            {
+                "name": "+8积分",
+                "img": "./images/point.svg"
+            },
+            {
+                "name": "谢谢惠顾",
+                "img": "./images/empty.svg"
+            },
+            {
+                "name": "iphone 12",
+                "img": "./images/iphone.svg"
+            },
+            {
+                "name": "再抽一次",
+                "img": "./images/more.svg"
+            },
+            {
+                "name": "+8积分",
+                "img": "./images/point.svg"
+            },
+            {
+                "name": "谢谢惠顾",
+                "img": "./images/empty.svg"
+            },
+            {
+                "name": "iphone 12",
+                "img": "./images/iphone.svg"
+            },
+        ];
+
+        function initCanvas() {
+            const canvas = document.getElementById('canvas');
+            const context = canvas.getContext("2d");
+            const w = canvas.parentNode.offsetWidth;
+            const h = canvas.parentNode.offsetHeight;
+
+            // 这里很关键, canvas 带两个属性width、height，为画布的分辨率, 跟style中的width、height意义不同。
+            // 最好设置成跟画布在页面中的实际大小一样, 不然canvas中的坐标跟鼠标的坐标无法匹配
+            canvas.width = w;
+            canvas.height = h;
+
+            // 灰色背景
+            context.fillStyle = "#aaa";
+            context.fillRect(0, 0, w, h);
+
+            // 外框
+            context.strokeStyle = "#fff";
+            context.lineWidth = 8;
+            context.strokeRect(0, 0, w, h);
+
+            context.fillStyle = "#828282";
+            context.font = "700 38px microsoft yahei"
+            context.textAlign = "center";
+            context.fillText("刮我中大奖", w / 2, (h + 19) / 2);
+            context.globalCompositeOperation = "destination-out";
+        }
+
+        const canvas = document.getElementById('canvas');
+        const button = document.getElementById('button');
+        const awardContent = document.getElementById('awardContent');
+        const awardLoading = document.getElementById('awardLoading');
+
+        const context = canvas.getContext("2d");
+        const w = canvas.parentNode.offsetWidth;
+        const h = canvas.parentNode.offsetHeight;
+        const offsetX = canvas.parentNode.offsetLeft;
+        const offsetY = canvas.parentNode.offsetTop;
+
+        let mousedown = false;
+        let loading = false;
+
+        function mouseDown(e) {
+            e.preventDefault();
+            mousedown = true;
+            if (!loading) {
+                loading = true;
+                setTimeout(() => {
+                    const index = Math.floor(Math.random() * prize_list.length);
+                    const award = prize_list[index].name;
+                    awardContent.textContent = award;
+                    awardLoading.style.display = 'none';
+
+                    if (!mousedown) {
+                        const datas = context.getImageData(50, 25, w - 110, h - 50).data;
+                        const opened = datas.filter(data => data === 0).length;
+                        if (opened >= datas.length * 0.5) {
+                            // 达到面积要求时执行的内容
+                            canvas.style.display = 'none';
+                            alert(award);
+                        }
+                    }
+                }, 1000);
+            }
+        }
+
+        function mouseMove(e) {
+            e.preventDefault();
+
+            if (mousedown) {
+                if (e.changedTouches) {
+                    e = e.changedTouches[e.changedTouches.length - 1];
+                }
+
+                const x = (e.clientX + document.body.scrollLeft || e.pageX) - offsetX || 0;
+                const y = (e.clientY + document.body.scrollTop || e.pageY) - offsetY || 0;
+                // 画360度的弧线, 就是一个圆, 因为设置了 canvasContext.globalCompositeOperation = 'destination-out'; 画出来是透明的
+                context.beginPath()
+                context.arc(x, y, 10, 0, Math.PI * 2);
+                context.fill();
+            }
+        }
+
+        function mouseUp(e) {
+            e.preventDefault();
+
+            mousedown = false;
+
+            const datas = context.getImageData(50, 25, w - 110, h - 50).data;
+            const opened = datas.filter(data => data === 0).length;
+            if (opened >= datas.length * 0.5 && awardContent.textContent) {
+                // 达到面积要求时执行的内容
+                canvas.style.display = 'none';
+                alert(awardContent.textContent);
+            }
+        }
+
+        initCanvas();
+        canvas.addEventListener("touchstart", mouseDown);
+        canvas.addEventListener("mousedown", mouseDown);
+
+        canvas.addEventListener("touchmove", mouseMove);
+        canvas.addEventListener("mousemove", mouseMove);
+
+        canvas.addEventListener("touchend", mouseUp);
+        canvas.addEventListener("mouseup", mouseUp);
+
+        button.addEventListener('click', function () {
+            loading = false;
+            canvas.style.display = 'block';
+            awardContent.textContent = '';
+            awardLoading.style.display = 'block';
+            initCanvas();
+        });
+    </script>
 </body>
 
 </html>
